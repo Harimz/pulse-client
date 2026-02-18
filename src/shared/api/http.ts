@@ -1,5 +1,28 @@
 import { ApiError } from "./api-error";
 
+type RequestVoidOptions = RequestInit & {
+  baseUrl: string;
+};
+
+export async function requestVoid(
+  path: string,
+  opts: RequestVoidOptions,
+): Promise<void> {
+  const url = path.startsWith("http") ? path : `${opts.baseUrl}${path}`;
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...opts,
+      credentials: "include",
+    });
+  } catch (err) {
+    throw new ApiError(0, "Network error", { cause: err });
+  }
+
+  await throwIfNotOk(res);
+}
+
 const readText = async (res: Response) => {
   try {
     return await res.text();

@@ -1,10 +1,17 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { getQueryClient } from "./query-client";
+import type { QueryClient } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 
-export function AppProviders({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
-
+export function AppProviders({
+  children,
+  queryClient,
+}: {
+  children: React.ReactNode;
+  queryClient: QueryClient;
+}) {
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <NuqsAdapter>{children}</NuqsAdapter>
+    </QueryClientProvider>
   );
 }

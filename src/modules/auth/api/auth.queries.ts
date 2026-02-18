@@ -7,17 +7,23 @@ import { authKeys } from "./auth.keys";
 export const useMe = () => {
   const accessToken = useAuthStore((s) => s.accessToken);
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const status = useAuthStore((s) => s.status);
 
   const api = createApiClient({
     getAccessToken: () => accessToken,
     setAccessToken,
   });
 
-  return useQuery<MeResponse>({
+  return useQuery<MeResponse | null>({
     queryKey: authKeys.me(),
-    enabled: !!accessToken,
+    enabled: status === "ready" && !!accessToken,
     queryFn: async () => {
-      const data = await api.requestJson("/api/v1/auth/me", { method: "GET" });
+      const data = await api.requestJson("/api/v1/auth/me", {
+        method: "GET",
+        credentials: "include",
+      });
+      console.log("INSIDE QUERY");
+      console.log(data);
       return meResponseSchema.parse(data);
     },
     staleTime: 30_000,

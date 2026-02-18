@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
-import { Route as _appNotificationsRouteImport } from './routes/__app.notifications'
+import { Route as AppFollowingRouteImport } from './routes/_app.following'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -23,46 +25,68 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppHomeRoute = AppHomeRouteImport.update({
   id: '/home',
   path: '/home',
   getParentRoute: () => AppRoute,
 } as any)
-const _appNotificationsRoute = _appNotificationsRouteImport.update({
-  id: '/__app/notifications',
-  path: '/notifications',
-  getParentRoute: () => rootRouteImport,
+const AppFollowingRoute = AppFollowingRouteImport.update({
+  id: '/following',
+  path: '/following',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/notifications': typeof _appNotificationsRoute
+  '/following': typeof AppFollowingRoute
   '/home': typeof AppHomeRoute
+  '/notifications': typeof AppNotificationsRoute
+  '/profile': typeof AppProfileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/notifications': typeof _appNotificationsRoute
+  '/following': typeof AppFollowingRoute
   '/home': typeof AppHomeRoute
+  '/notifications': typeof AppNotificationsRoute
+  '/profile': typeof AppProfileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
-  '/__app/notifications': typeof _appNotificationsRoute
+  '/_app/following': typeof AppFollowingRoute
   '/_app/home': typeof AppHomeRoute
+  '/_app/notifications': typeof AppNotificationsRoute
+  '/_app/profile': typeof AppProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/notifications' | '/home'
+  fullPaths: '/' | '/following' | '/home' | '/notifications' | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/notifications' | '/home'
-  id: '__root__' | '/' | '/_app' | '/__app/notifications' | '/_app/home'
+  to: '/' | '/following' | '/home' | '/notifications' | '/profile'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/following'
+    | '/_app/home'
+    | '/_app/notifications'
+    | '/_app/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
-  _appNotificationsRoute: typeof _appNotificationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -81,6 +105,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/home': {
       id: '/_app/home'
       path: '/home'
@@ -88,22 +126,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
-    '/__app/notifications': {
-      id: '/__app/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof _appNotificationsRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/following': {
+      id: '/_app/following'
+      path: '/following'
+      fullPath: '/following'
+      preLoaderRoute: typeof AppFollowingRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
 interface AppRouteChildren {
+  AppFollowingRoute: typeof AppFollowingRoute
   AppHomeRoute: typeof AppHomeRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
+  AppProfileRoute: typeof AppProfileRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppFollowingRoute: AppFollowingRoute,
   AppHomeRoute: AppHomeRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
+  AppProfileRoute: AppProfileRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -111,7 +155,6 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
-  _appNotificationsRoute: _appNotificationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

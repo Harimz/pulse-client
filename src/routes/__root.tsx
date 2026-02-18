@@ -4,12 +4,17 @@ import {
   Scripts,
   Outlet,
   createRootRoute,
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { AppProviders } from "../shared/providers/app-providers";
+import type { RouterContext } from "@/shared/types/router-context";
+import { AuthDialog } from "@/modules/auth/ui/components/auth-dialog";
+import { AuthBootstrap } from "@/modules/auth/ui/components/auth-bootstrap";
+import { Toaster } from "sonner";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -25,9 +30,16 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+
   return (
-    <AppProviders>
+    <AppProviders queryClient={queryClient}>
+      <Toaster />
+      <AuthBootstrap />
+
       <Outlet />
+
+      <AuthDialog />
     </AppProviders>
   );
 }
