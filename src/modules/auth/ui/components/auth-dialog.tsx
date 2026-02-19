@@ -13,8 +13,6 @@ import { LoginForm } from "./login-form";
 export const AuthDialog = () => {
   const { isOpen, mode, close, openLogin, openRegister } = useAuthModal();
 
-  console.log(isOpen);
-
   return (
     <Dialog
       open={isOpen}

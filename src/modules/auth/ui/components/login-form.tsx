@@ -10,9 +10,10 @@ import { Button } from "@/components/ui/button";
 import { useAuthModal } from "../hooks/use-auth-modal";
 import { useLogin } from "../../api/auth.mutations";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
 
 export const LoginForm = () => {
-  const { openRegister } = useAuthModal();
+  const { openRegister, close } = useAuthModal();
 
   const { mutate: login, isPending } = useLogin();
 
@@ -25,7 +26,12 @@ export const LoginForm = () => {
   });
 
   const handleSubmit = (values: LoginRequest) => {
-    login(values);
+    login(values, {
+      onSuccess: () => {
+        close();
+        toast.success("Signed out");
+      },
+    });
   };
 
   return (

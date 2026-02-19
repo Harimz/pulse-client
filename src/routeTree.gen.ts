@@ -15,6 +15,8 @@ import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
 import { Route as AppFollowingRouteImport } from './routes/_app.following'
+import { Route as AppProfileUsernameRouteImport } from './routes/_app.profile.$username'
+import { Route as AppPostIdRouteImport } from './routes/_app.post.$id'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -45,20 +47,34 @@ const AppFollowingRoute = AppFollowingRouteImport.update({
   path: '/following',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProfileUsernameRoute = AppProfileUsernameRouteImport.update({
+  id: '/$username',
+  path: '/$username',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppPostIdRoute = AppPostIdRouteImport.update({
+  id: '/post/$id',
+  path: '/post/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/following': typeof AppFollowingRoute
   '/home': typeof AppHomeRoute
   '/notifications': typeof AppNotificationsRoute
-  '/profile': typeof AppProfileRoute
+  '/profile': typeof AppProfileRouteWithChildren
+  '/post/$id': typeof AppPostIdRoute
+  '/profile/$username': typeof AppProfileUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/following': typeof AppFollowingRoute
   '/home': typeof AppHomeRoute
   '/notifications': typeof AppNotificationsRoute
-  '/profile': typeof AppProfileRoute
+  '/profile': typeof AppProfileRouteWithChildren
+  '/post/$id': typeof AppPostIdRoute
+  '/profile/$username': typeof AppProfileUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -67,13 +83,29 @@ export interface FileRoutesById {
   '/_app/following': typeof AppFollowingRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/notifications': typeof AppNotificationsRoute
-  '/_app/profile': typeof AppProfileRoute
+  '/_app/profile': typeof AppProfileRouteWithChildren
+  '/_app/post/$id': typeof AppPostIdRoute
+  '/_app/profile/$username': typeof AppProfileUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/following' | '/home' | '/notifications' | '/profile'
+  fullPaths:
+    | '/'
+    | '/following'
+    | '/home'
+    | '/notifications'
+    | '/profile'
+    | '/post/$id'
+    | '/profile/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/following' | '/home' | '/notifications' | '/profile'
+  to:
+    | '/'
+    | '/following'
+    | '/home'
+    | '/notifications'
+    | '/profile'
+    | '/post/$id'
+    | '/profile/$username'
   id:
     | '__root__'
     | '/'
@@ -82,6 +114,8 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/notifications'
     | '/_app/profile'
+    | '/_app/post/$id'
+    | '/_app/profile/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -133,21 +167,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFollowingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/profile/$username': {
+      id: '/_app/profile/$username'
+      path: '/$username'
+      fullPath: '/profile/$username'
+      preLoaderRoute: typeof AppProfileUsernameRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/_app/post/$id': {
+      id: '/_app/post/$id'
+      path: '/post/$id'
+      fullPath: '/post/$id'
+      preLoaderRoute: typeof AppPostIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
+
+interface AppProfileRouteChildren {
+  AppProfileUsernameRoute: typeof AppProfileUsernameRoute
+}
+
+const AppProfileRouteChildren: AppProfileRouteChildren = {
+  AppProfileUsernameRoute: AppProfileUsernameRoute,
+}
+
+const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
+  AppProfileRouteChildren,
+)
 
 interface AppRouteChildren {
   AppFollowingRoute: typeof AppFollowingRoute
   AppHomeRoute: typeof AppHomeRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
-  AppProfileRoute: typeof AppProfileRoute
+  AppProfileRoute: typeof AppProfileRouteWithChildren
+  AppPostIdRoute: typeof AppPostIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppFollowingRoute: AppFollowingRoute,
   AppHomeRoute: AppHomeRoute,
   AppNotificationsRoute: AppNotificationsRoute,
-  AppProfileRoute: AppProfileRoute,
+  AppProfileRoute: AppProfileRouteWithChildren,
+  AppPostIdRoute: AppPostIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

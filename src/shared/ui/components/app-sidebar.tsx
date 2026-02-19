@@ -1,9 +1,10 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMe } from "@/modules/auth/api/auth.queries";
 import { useAuthStore } from "@/modules/auth/state/auth.store";
 import { AuthButton } from "@/modules/auth/ui/components/auth-button";
 import { Link, useLocation } from "@tanstack/react-router";
-import { Bell, Compass, User, Users } from "lucide-react";
+import { Bell, Compass, Plus, User, Users } from "lucide-react";
 
 const SIDEBAR_ITEMS = [
   {
@@ -41,12 +42,11 @@ export const AppSidebar = () => {
   const user = accessToken ? data : undefined;
 
   const isBootstrapping = authStatus !== "ready";
-
   if (isBootstrapping) return "loading...";
 
   return (
-    <aside className="bg-white w-[20rem] fixed top-0 bottom-0 border-r border-border p-6">
-      <div className="relative h-full flex flex-col justify-between">
+    <aside className="fixed left-0 top-0 h-screen w-[20rem] bg-white border-r border-border p-6">
+      <div className="h-full flex flex-col">
         <div className="flex flex-col gap-2">
           {SIDEBAR_ITEMS.map((item) => (
             <Link to={item.href} key={item.id}>
@@ -62,9 +62,17 @@ export const AppSidebar = () => {
               </div>
             </Link>
           ))}
+
+          <Link to="/home" className="w-full">
+            <Button className="mt-4 w-full" variant="primary">
+              <Plus /> Create Post
+            </Button>
+          </Link>
         </div>
 
-        <AuthButton user={user} />
+        <div className="mt-auto">
+          <AuthButton user={user} />
+        </div>
       </div>
     </aside>
   );

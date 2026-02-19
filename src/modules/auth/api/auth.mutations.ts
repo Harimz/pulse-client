@@ -10,18 +10,12 @@ import { ApiError } from "@/shared/api/api-error";
 export const useLogin = () => {
   const qc = useQueryClient();
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
-  const { close } = useAuthModal();
-
   return useMutation({
     mutationFn: (input: LoginRequest) => login(input),
     onSuccess: async (data) => {
       setAccessToken(data.accessToken);
 
       await qc.invalidateQueries({ queryKey: authKeys.me() });
-
-      close();
-
-      toast.success("Welcome Back!");
     },
 
     onError: (err) => {
@@ -75,7 +69,6 @@ export const useLogout = () => {
     },
 
     onError: (err) => {
-      console.log("ERROR LOGOUT");
       if (err instanceof ApiError) toast.error(err.message);
       else toast.error("Something went wrong");
     },

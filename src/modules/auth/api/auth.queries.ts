@@ -22,8 +22,6 @@ export const useMe = () => {
         method: "GET",
         credentials: "include",
       });
-      console.log("INSIDE QUERY");
-      console.log(data);
       return meResponseSchema.parse(data);
     },
     staleTime: 30_000,

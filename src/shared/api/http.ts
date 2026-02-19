@@ -95,15 +95,13 @@ export async function requestJson<T>(
   const doFetch = async (token: string | null) => {
     const headers = new Headers(init.headers);
 
-    // only set content-type if body exists and caller didn't already set it
     if (!headers.has("Content-Type") && init.body) {
       headers.set("Content-Type", "application/json");
     }
 
     if (token) headers.set("Authorization", `Bearer ${token}`);
 
-    // SSR: forward incoming cookies so refresh-cookie works
-    if (cookie) headers.set("Cookie", cookie);
+    if (cookie) headers.set("cookie", cookie);
 
     let res: Response;
     try {
@@ -116,26 +114,26 @@ export async function requestJson<T>(
       throw new ApiError(0, "Network error", { cause: err });
     }
 
-    await throwIfNotOk(res);
-
-    const payload = await readJsonSafely<T>(res);
-    if (payload == null) throw new ApiError(res.status, "Empty response body");
-    return payload;
+    return res;
   };
 
-  try {
-    return await doFetch(accessToken ?? null);
-  } catch (err) {
-    if (
-      retryOnUnauthorized &&
-      err instanceof ApiError &&
-      err.status === 401 &&
-      onUnauthorized
-    ) {
-      const newToken = await onUnauthorized();
-      if (!newToken) throw err;
-      return await doFetch(newToken);
+  let res = await doFetch(accessToken ?? null);
+
+  if (
+    retryOnUnauthorized &&
+    (res.status === 401 || res.status === 403) &&
+    onUnauthorized
+  ) {
+    const newToken = await onUnauthorized();
+    if (newToken) {
+      res = await doFetch(newToken);
     }
-    throw err;
   }
+
+  await throwIfNotOk(res);
+
+  const payload = await readJsonSafely<T>(res);
+  if (payload == null) throw new ApiError(res.status, "Empty response body");
+
+  return payload;
 }
