@@ -23,7 +23,7 @@ Pulse Social Client is a TypeScript React frontend for a Spring Boot monolith ba
 
 ## Architecture Overview
 
-![Pulse Client Architecture](/Users/harimzermeno/Documents/portfolio-projects/Java/pulse-client/pulse-client-diagram.svg)
+![Pulse Client Architecture](./pulse-client-diagram.svg)
 
 ### API & Data Flow
 
