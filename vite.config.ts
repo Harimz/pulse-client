@@ -6,6 +6,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { fileURLToPath, URL } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
+import netlify from "@netlify/vite-plugin-tanstack-start";
 
 const config = defineConfig({
   resolve: {
@@ -22,6 +23,7 @@ const config = defineConfig({
     }),
     tailwindcss(),
     tanstackStart(),
+    netlify(),
     viteReact(),
   ],
 });
