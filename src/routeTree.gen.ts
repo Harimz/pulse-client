@@ -9,15 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
 import { Route as AppFollowingRouteImport } from './routes/_app.following'
 import { Route as AppProfileUsernameRouteImport } from './routes/_app.profile.$username'
 import { Route as AppPostIdRouteImport } from './routes/_app.post.$id'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -26,11 +31,6 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
 } as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
   id: '/notifications',
@@ -48,9 +48,9 @@ const AppFollowingRoute = AppFollowingRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileUsernameRoute = AppProfileUsernameRouteImport.update({
-  id: '/$username',
-  path: '/$username',
-  getParentRoute: () => AppProfileRoute,
+  id: '/profile/$username',
+  path: '/profile/$username',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppPostIdRoute = AppPostIdRouteImport.update({
   id: '/post/$id',
@@ -60,19 +60,19 @@ const AppPostIdRoute = AppPostIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/following': typeof AppFollowingRoute
   '/home': typeof AppHomeRoute
   '/notifications': typeof AppNotificationsRoute
-  '/profile': typeof AppProfileRouteWithChildren
   '/post/$id': typeof AppPostIdRoute
   '/profile/$username': typeof AppProfileUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/following': typeof AppFollowingRoute
   '/home': typeof AppHomeRoute
   '/notifications': typeof AppNotificationsRoute
-  '/profile': typeof AppProfileRouteWithChildren
   '/post/$id': typeof AppPostIdRoute
   '/profile/$username': typeof AppProfileUsernameRoute
 }
@@ -80,10 +80,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
   '/_app/following': typeof AppFollowingRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/notifications': typeof AppNotificationsRoute
-  '/_app/profile': typeof AppProfileRouteWithChildren
   '/_app/post/$id': typeof AppPostIdRoute
   '/_app/profile/$username': typeof AppProfileUsernameRoute
 }
@@ -91,29 +91,29 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/following'
     | '/home'
     | '/notifications'
-    | '/profile'
     | '/post/$id'
     | '/profile/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/following'
     | '/home'
     | '/notifications'
-    | '/profile'
     | '/post/$id'
     | '/profile/$username'
   id:
     | '__root__'
     | '/'
     | '/_app'
+    | '/login'
     | '/_app/following'
     | '/_app/home'
     | '/_app/notifications'
-    | '/_app/profile'
     | '/_app/post/$id'
     | '/_app/profile/$username'
   fileRoutesById: FileRoutesById
@@ -121,10 +121,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -138,13 +146,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_app/profile': {
-      id: '/_app/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
     }
     '/_app/notifications': {
       id: '/_app/notifications'
@@ -169,10 +170,10 @@ declare module '@tanstack/react-router' {
     }
     '/_app/profile/$username': {
       id: '/_app/profile/$username'
-      path: '/$username'
+      path: '/profile/$username'
       fullPath: '/profile/$username'
       preLoaderRoute: typeof AppProfileUsernameRouteImport
-      parentRoute: typeof AppProfileRoute
+      parentRoute: typeof AppRoute
     }
     '/_app/post/$id': {
       id: '/_app/post/$id'
@@ -184,32 +185,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppProfileRouteChildren {
-  AppProfileUsernameRoute: typeof AppProfileUsernameRoute
-}
-
-const AppProfileRouteChildren: AppProfileRouteChildren = {
-  AppProfileUsernameRoute: AppProfileUsernameRoute,
-}
-
-const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
-  AppProfileRouteChildren,
-)
-
 interface AppRouteChildren {
   AppFollowingRoute: typeof AppFollowingRoute
   AppHomeRoute: typeof AppHomeRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
-  AppProfileRoute: typeof AppProfileRouteWithChildren
   AppPostIdRoute: typeof AppPostIdRoute
+  AppProfileUsernameRoute: typeof AppProfileUsernameRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppFollowingRoute: AppFollowingRoute,
   AppHomeRoute: AppHomeRoute,
   AppNotificationsRoute: AppNotificationsRoute,
-  AppProfileRoute: AppProfileRouteWithChildren,
   AppPostIdRoute: AppPostIdRoute,
+  AppProfileUsernameRoute: AppProfileUsernameRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -217,6 +206,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -7,5 +7,5 @@ export const cursorPageSchema = <T extends z.ZodTypeAny>(item: T) =>
     nextCursor: z.string().nullable().optional(),
   });
 
-export const exploreFeedPageSchema = cursorPageSchema(postResponseSchema);
-export type ExploreFeedPage = z.infer<typeof exploreFeedPageSchema>;
+export const cursorPageResponseSchema = cursorPageSchema(postResponseSchema);
+export type CursorPageResponse = z.infer<typeof cursorPageResponseSchema>;

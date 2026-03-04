@@ -1,23 +1,63 @@
 import { ApiError } from "./api-error";
 
-type RequestVoidOptions = RequestInit & {
+export type RequestVoidOptions = RequestInit & {
   baseUrl: string;
+  accessToken?: string | null;
+  cookie?: string;
+  retryOnUnauthorized?: boolean;
+  onUnauthorized?: () => Promise<string | null>;
 };
 
 export async function requestVoid(
   path: string,
   opts: RequestVoidOptions,
 ): Promise<void> {
-  const url = path.startsWith("http") ? path : `${opts.baseUrl}${path}`;
+  const {
+    baseUrl,
+    accessToken,
+    cookie,
+    retryOnUnauthorized = true,
+    onUnauthorized,
+    ...init
+  } = opts;
 
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      ...opts,
-      credentials: "include",
-    });
-  } catch (err) {
-    throw new ApiError(0, "Network error", { cause: err });
+  const url = path.startsWith("http") ? path : `${baseUrl}${path}`;
+
+  const doFetch = async (token: string | null) => {
+    const headers = new Headers(init.headers);
+
+    if (!headers.has("Content-Type") && init.body) {
+      headers.set("Content-Type", "application/json");
+    }
+
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    if (cookie) headers.set("cookie", cookie);
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        ...init,
+        headers,
+        credentials: "include",
+      });
+    } catch (err) {
+      throw new ApiError(0, "Network error", { cause: err });
+    }
+
+    return res;
+  };
+
+  let res = await doFetch(accessToken ?? null);
+
+  if (
+    retryOnUnauthorized &&
+    (res.status === 401 || res.status === 403) &&
+    onUnauthorized
+  ) {
+    const newToken = await onUnauthorized();
+    if (newToken) {
+      res = await doFetch(newToken);
+    }
   }
 
   await throwIfNotOk(res);

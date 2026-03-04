@@ -1,3 +1,4 @@
+import { ProfileView } from "@/modules/profile/ui/views/profile-view";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/profile/$username")({
@@ -5,5 +6,7 @@ export const Route = createFileRoute("/_app/profile/$username")({
 });
 
 function RouteComponent() {
-  return <div>Hello "/_app/profile/$username"!</div>;
+  const { username } = Route.useParams();
+
+  return <ProfileView username={username} />;
 }

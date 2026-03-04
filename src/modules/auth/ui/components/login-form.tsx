@@ -29,7 +29,7 @@ export const LoginForm = () => {
     login(values, {
       onSuccess: () => {
         close();
-        toast.success("Signed out");
+        toast.success("Signed In");
       },
     });
   };

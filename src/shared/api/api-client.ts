@@ -1,5 +1,5 @@
 import { refreshAuth } from "@/modules/auth/api/auth.client";
-import { requestJson } from "./http";
+import { requestJson, requestVoid } from "./http";
 import { env } from "../config/env";
 
 type ApiClientRuntime = {
@@ -32,6 +32,15 @@ export const createApiClient = (rt: ApiClientRuntime) => {
   return {
     requestJson: <T>(path: string, init: RequestInit = {}) =>
       requestJson<T>(path, {
+        baseUrl: env.API_URL,
+        ...init,
+        accessToken: rt.getAccessToken(),
+        cookie: rt.cookie,
+        onUnauthorized,
+      }),
+
+    requestVoid: (path: string, init: RequestInit = {}) =>
+      requestVoid(path, {
         baseUrl: env.API_URL,
         ...init,
         accessToken: rt.getAccessToken(),

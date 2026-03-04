@@ -50,9 +50,9 @@ export const AuthButton = ({ user }: Props) => {
 
   return (
     <Button
-      variant="outline"
-      className="w-full justify-start gap-2"
+      className="w-full gap-2 text-center"
       onClick={openLogin}
+      variant="primary"
     >
       <ArrowRightToLine className="size-4" />
       Login

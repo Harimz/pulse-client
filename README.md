@@ -1,194 +1,72 @@
-Welcome to your new TanStack Start app! 
+# Pulse Social Client
 
-# Getting Started
+## Overview
+Pulse Social Client is a TypeScript React frontend for a Spring Boot monolith backend. It supports auth, profile pages, post creation, likes, comments, explore/following feeds, and event-driven notifications. The frontend uses a centralized API client for token handling, error normalization, and refresh-on-unauthorized behavior, so network logic is consistent across modules. Data loading is built around TanStack Query + route prefetching, with cursor-based infinite scroll for feed-like surfaces. The codebase is organized by feature modules (`auth`, `posts`, `feeds`, `profile`, `notifications`, `follows`) with separate `domain/api/ui` layers.
 
-To run this application:
+## Tech Stack
+- Frontend: React 19, TypeScript, TanStack Start/Router, Tailwind CSS 4
+- Data Fetching: TanStack Query (infinite queries, route prefetch, polling for unread notifications)
+- Database: PostgreSQL (managed by Spring Boot backend; this repo is frontend-only)
+- Auth & Security: JWT access token + refresh token flow (via backend Spring Security)
+- Deployment: Vite + Nitro Node server build output (`npm run build`)
 
-```bash
-npm install
-npm run dev
-```
+## Core Features
+- Auth bootstrap with token refresh and protected route shell.
+- Explore and Following feeds with cursor-based infinite scroll.
+- Post detail page with comments and optimistic cache updates.
+- Profile pages with follow/unfollow behavior and self-profile edit placeholder CTA.
+- Notifications page with polling (`/notifications` list + unread badge count).
+- Consistent API error handling and retry behavior across all modules.
 
-# Building For Production
+## Architecture Overview
+### API & Data Flow
+All API calls go through a centralized client in `src/shared/api/api-client.ts` and `src/shared/api/http.ts`. It injects auth headers, retries once on `401/403` using refresh logic, and normalizes failures into `ApiError`. Feature modules (`src/modules/*/api`) only define endpoint-specific calls and schema parsing.
 
-To build this application for production:
+### Route Prefetch + Query Usage
+Each route prefetches core data with TanStack Router loaders (for fast first render), then consumes the same query keys in UI hooks. Feature-specific query keys (`*.keys.ts`) and options (`*.options.ts`) keep caching predictable and reusable.
 
-```bash
-npm run build
-```
+### Caching Strategy
+- Default query caching configured centrally in `src/router.tsx` (`staleTime`, retry, gcTime).
+- Optimistic updates used for interactions like likes, comments, and follow/unfollow.
+- Targeted invalidation keeps feed/profile/post data in sync.
+- Notifications use lightweight polling intervals for freshness without backend realtime transport.
+
+## Interaction & Notification Processing
+User interactions (follow, mention, post) are processed by the backend’s event-driven outbox/notification pipeline. The frontend consumes this via notification list + unread count endpoints and polling. This avoids websocket/SSE complexity while still keeping the UI current.
+
+## Database Design
+Backend domain is normalized around users, profiles, posts, follows, likes, comments, notifications, and outbox events. Cursor pagination is based on `(created_at, id)` ordering, which enables stable infinite scroll behavior on the frontend.
 
 ## Testing
+- Unit/component tests: Vitest + Testing Library.
+- API behavior mocks: MSW.
+- Focused coverage on auth bootstrapping/hooks, feed/list behavior, notifications, post hooks, and follow/profile CTA logic.
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
+Run tests:
 ```bash
 npm run test
 ```
 
-## Styling
+## Tradeoffs & Future Improvements
+- Polling for notifications is simpler than realtime transport but less immediate than SSE/WebSockets.
+- Optimistic updates improve UX but increase cache coordination complexity.
+- Profile editing UI is currently a placeholder (backend endpoint is available).
+- Additional integration/e2e tests can improve confidence on multi-step flows.
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `npm install @tailwindcss/vite tailwindcss -D`
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
+## Getting Started
+1. Install dependencies:
+```bash
+npm install
 ```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
+2. Set environment variables:
+```bash
+VITE_API_URL=http://localhost:8080
 ```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
+3. Run dev server:
+```bash
+npm run dev
 ```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
+4. Build production bundle:
+```bash
+npm run build
 ```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
-# pulse-client
